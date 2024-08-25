@@ -14,35 +14,36 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
+  id           Int    @id @default(autoincrement())
   name         String
   password     String
-  partnerId    Int?     @unique
-  activeGameId Int?     @unique
-  activeGame   Game?    @relation("ActiveGame", fields: [activeGameId], references: [gameId])
-  moves        Move[]   @relation("PlayerMoves")
+  partnerId    Int?   @unique
+  points       Int?   @default(0)
+  activeGameId Int?
+  activeGame   Game?  @relation("GamePlayers", fields: [activeGameId], references: [gameId])
+  moves        Move[] @relation("PlayerMoves")
 }
 
 model Game {
-  gameId    Int      @id @default(autoincrement())
+  gameId    Int       @id @default(autoincrement())
   startTime DateTime?
   endTime   DateTime?
   roundNo   Int?
   status    String?
-  moves     Move[]   @relation("GameMoves")
-  activeUser User?   @relation("ActiveGame")
+  moves     Move[]    @relation("GameMoves")
+  players   User[]    @relation("GamePlayers")
 }
 
 model Move {
-  moveId    Int      @id @default(autoincrement())
+  moveId    Int       @id @default(autoincrement())
   gameId    Int
   playerId  Int
   move      String
   roundNo   Int
   timestamp DateTime? @default(now())
 
-  game      Game     @relation("GameMoves", fields: [gameId], references: [gameId])
-  player    User     @relation("PlayerMoves", fields: [playerId], references: [id])
+  game   Game @relation("GameMoves", fields: [gameId], references: [gameId])
+  player User @relation("PlayerMoves", fields: [playerId], references: [id])
 }
 
 enum GameStatus {

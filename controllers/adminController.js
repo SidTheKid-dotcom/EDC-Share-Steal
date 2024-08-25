@@ -26,7 +26,7 @@ exports.startGame = async (req, res) => {
     // Logic to create a new game
     const gameId = req.body.gameId;
 
-    const existingGame = await prisma.game.findUnique({
+    const existingGame = await prisma.game.findFirst({
         where: {
             gameId: gameId
         }
@@ -81,10 +81,11 @@ exports.endGame = async (req, res) => {
 exports.resetClock = (req, res) => {
     // Logic to reset the game clock
     const duration = req.body.duration || 30;
+    const gameId = req.body.gameId;
     const roundNumber = req.body.roundNumber;
 
     // Default to 30 seconds if not provided
-    resetClock(duration, roundNumber);
+    resetClock(duration, gameId, roundNumber);
 
     res.send(`Clock reset for round ${roundNumber}`);
 };

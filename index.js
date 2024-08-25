@@ -10,19 +10,10 @@ app.use('/admin', adminRoutes);
 // Set up a headless websocket server that prints any
 // events that come in.
 
-// Track connected clients
-let { addClient, removeClient, getClients } = require('./game-state/clients');
+const userController = require('./controllers/userController');
 
 const wsServer = new ws.Server({ noServer: true });
-wsServer.on('connection', socket => {
-
-  addClient(socket);
-  socket.on('close', () => {
-    removeClient(socket);
-  });
-
-  socket.on('message', message => console.log(message));
-});
+wsServer.on('connection', userController);
 
 
 // `server` is a vanilla Node.js HTTP server, so use
