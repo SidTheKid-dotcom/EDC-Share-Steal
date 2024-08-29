@@ -14,6 +14,57 @@ exports.getDashboard = async (req, res) => {
     });
 };
 
+exports.pairPlayers = async (req, res) => {
+    try {
+        // Get the top 150 players sorted by points in descending order, then by id in ascending order
+        const topPlayers = await prisma.user.findMany({
+            orderBy: {
+                points: 'desc',
+            },
+            take: 150,
+        });
+
+        // Step 2: Sort these top 4 players by their IDs in ascending order
+        topPlayers.sort((a, b) => a.id - b.id);
+
+        // Pair players and update partnerId
+        for (let i = 0; i < topPlayers.length; i += 2) {
+            const currentPlayer = topPlayers[i];
+            const nextPlayer = topPlayers[i + 1];
+
+            if (nextPlayer) {
+                await prisma.user.update({
+                    where: { id: currentPlayer.id },
+                    data: { partnerId: nextPlayer.id },
+                });
+
+                await prisma.user.update({
+                    where: { id: nextPlayer.id },
+                    data: { partnerId: currentPlayer.id },
+                });
+            }
+        }
+
+        // Update partnerId to null for players not in the top 150
+        await prisma.user.updateMany({
+            where: {
+                id: {
+                    notIn: topPlayers.map(player => player.id),
+                },
+            },
+            data: {
+                partnerId: null,
+            },
+        });
+
+        res.send('Players paired and remaining players updated');
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('An error occurred while pairing players');
+    }
+};
+
 exports.createNewGame = async (req, res) => {
     // Logic to create a new game
     res.send('New game created');
@@ -47,7 +98,7 @@ exports.startGame = async (req, res) => {
         }
     })
 
-    res.send(startedGame);
+    return res.send(startedGame);
 };
 
 exports.endGame = async (req, res) => {
@@ -82,7 +133,7 @@ exports.resetClock = async (req, res) => {
     // Logic to reset the game clock
     const duration = req.body.duration || 30;
     const gameId = req.body.gameId;
-    
+
     const updatedGame = await prisma.game.update({
         where: {
             gameId: gameId,

@@ -8,7 +8,7 @@ const { getGlobalClock } = require('../game-state/clock');
 const userController = (socket, request) => {
 
     const playerId = request.headers['playerid'];
-    console.log('Plyaer ID: while connecting ',  playerId);
+    console.log('Plyaer ID: while connecting ', playerId);
     addClient(socket, playerId);
 
     socket.on('close', () => {
@@ -41,58 +41,58 @@ const userController = (socket, request) => {
 }
 
 async function handleSubmitAnswer(data, socket) {
+    const { gameId, userId, move } = data;
 
-    const gameId = data.gameId;
-    const userId = data.userId;
-    const move = data.move;
+    try {
+        // Fetch game, user, and check for existing move in a single query
+        const [game, user, existingMove] = await Promise.all([
+            prisma.game.findUnique({
+                where: { gameId },
+                select: { status: true, roundNo: true }
+            }),
+            prisma.user.findUnique({
+                where: { id: userId },
+                select: { partnerId: true }
+            }),
+            prisma.move.findFirst({
+                where: { gameId, playerId: userId }
+            })
+        ]);
 
-    const existingGame = await prisma.game.findUnique({
-        where: {
-            gameId: gameId
+        // Check if game is active
+        if (!game || game.status !== 'ACTIVE') {
+            console.log('Game not found or is not active');
+            return;
         }
-    });
-    if (!existingGame) {
-        console.log('Game not found');
-        return;
+
+        // Check if user exists and has a partner
+        if (!user || user.partnerId === null) {
+            console.log('User not found or partner not found');
+            return;
+        }
+
+        // Check if move already exists for this round
+        if (existingMove && existingMove.roundNo === game.roundNo) {
+            console.log('Move already exists');
+            return;
+        }
+
+        // Create new move
+        const newMove = await prisma.move.create({
+            data: {
+                gameId,
+                playerId: userId,
+                move,
+                roundNo: game.roundNo,
+                timestamp: new Date(),
+            }
+        });
+
+        socket.send("newMove", newMove);
+    } catch (error) {
+        console.error('Error handling submit answer:', error);
+        socket.send('error', 'An error occurred while processing the move');
     }
-
-    if (existingGame.status !== 'ACTIVE') {
-        console.log('Game is not active');
-        return;
-    }
-
-    // Check if a move already exists
-    const game = await prisma.game.findUnique({
-        where: {
-            gameId: gameId
-        }
-    });
-    const roundNo = game.roundNo;
-
-    const existingMove = await prisma.move.findFirst({
-        where: {
-            gameId: gameId,
-            playerId: userId,
-            roundNo: roundNo
-        }
-    });
-
-    if (existingMove) {
-        console.log('Move already exists');
-        return;
-    }
-
-    const newMove = await prisma.move.create({
-        data: {
-            gameId: gameId,
-            playerId: userId,
-            move: move,
-            roundNo: roundNo,
-            timestamp: new Date(),
-        }
-    });
-
-    socket.send("newMove", newMove);
 }
 
 module.exports = userController;

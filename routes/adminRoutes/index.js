@@ -5,6 +5,7 @@ const adminController = require('../../controllers/adminController');
 const adminAuth = require('../../middleware/adminAuth');
 
 router.get('/dashboard', adminAuth, adminController.getDashboard);
+router.post('/pair-players', adminAuth, adminController.pairPlayers);
 router.post('/create-new-game', adminAuth, adminController.createNewGame);
 router.post('/start-game', adminAuth, adminController.startGame);
 router.post('/end-game', adminAuth, adminController.endGame);

@@ -12,7 +12,8 @@ function startClock(duration, gameId, roundNumber) {
       clearInterval(globalClock);
       // Notify clients that the round has ended
       broadcast(JSON.stringify({ type: 'round-end', roundNumber }));
-
+      
+      console.log("calculate points");
       calculatePoints(gameId, roundNumber);
 
       broadcast(JSON.stringify({ type: 'notice', message: "Points Calculated" }));

@@ -27,6 +27,8 @@ exports.calculatePoints = async (gameId, roundNumber) => {
 
                 const partnerMove = partnerMoveRow.move.toUpperCase();
 
+                console.log("Player: " + player.id + " Move: " + playerMove + " Partner: " + partnerId + " Move: " + partnerMove);
+
                 if (playerMove === partnerMove && playerMove === "SHARE") {
                     await updateBothPlayerPoints(player.id, partnerId, 50);
 
@@ -59,6 +61,19 @@ exports.calculatePoints = async (gameId, roundNumber) => {
                     const client = getClientById(player.id);
                     if (client) {
                         broadcastToOne(`Message for player ${player.id} Opponent chose Share`, client);
+                    }
+
+                    const partnerClient = getClientById(partnerId);
+                    if (partnerClient) {
+                        broadcastToOne(`Message for player ${partnerId} Opponent chose Steal`, partnerClient);
+                    }
+
+                } else if (playerMove === "STEAL" && partnerMove === "STEAL") {
+                    //await updateSinglePlayerPoints(player.id, -10);
+
+                    const client = getClientById(player.id);
+                    if (client) {
+                        broadcastToOne(`Message for player ${player.id} Opponent chose Steal`, client);
                     }
 
                     const partnerClient = getClientById(partnerId);
