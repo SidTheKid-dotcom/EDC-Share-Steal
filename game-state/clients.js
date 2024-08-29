@@ -2,8 +2,8 @@
 
 let clients = [];
 
-const addClient = (client) => {
-  clients.push(client);
+const addClient = (client, playerId) => {
+  clients.push({ client, playerId });
 };
 
 const removeClient = (client) => {
@@ -14,8 +14,13 @@ const getClients = () => {
   return clients;
 };
 
+const getClientById = (playerId) => {
+  return clients.find(c => c.playerId === JSON.stringify(playerId)).client;
+};
+
 module.exports = {
   addClient,
   removeClient,
-  getClients
+  getClients,
+  getClientById
 };

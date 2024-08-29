@@ -6,8 +6,15 @@ exports.broadcast = (message) => {
 
     const clients = getClients();
     clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(message);
+        if (client.client.readyState === WebSocket.OPEN) {
+            client.client.send(message);
         }
     });
 }
+
+exports.broadcastToOne = (message, client) => {
+    
+    if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+    }
+};

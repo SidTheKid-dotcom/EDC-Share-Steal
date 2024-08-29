@@ -5,9 +5,12 @@ const prisma = new PrismaClient();
 let { addClient, removeClient, getClients } = require('../game-state/clients');
 const { getGlobalClock } = require('../game-state/clock');
 
-const userController = (socket) => {
+const userController = (socket, request) => {
 
-    addClient(socket);
+    const playerId = request.headers['playerid'];
+    console.log('Plyaer ID: while connecting ',  playerId);
+    addClient(socket, playerId);
+
     socket.on('close', () => {
         removeClient(socket);
     });
@@ -58,10 +61,19 @@ async function handleSubmitAnswer(data, socket) {
         return;
     }
 
+    // Check if a move already exists
+    const game = await prisma.game.findUnique({
+        where: {
+            gameId: gameId
+        }
+    });
+    const roundNo = game.roundNo;
+
     const existingMove = await prisma.move.findFirst({
         where: {
             gameId: gameId,
-            playerId: userId
+            playerId: userId,
+            roundNo: roundNo
         }
     });
 
@@ -69,13 +81,6 @@ async function handleSubmitAnswer(data, socket) {
         console.log('Move already exists');
         return;
     }
-
-    const game = await prisma.game.findUnique({
-        where: {
-            gameId: gameId
-        }
-    });
-    const roundNo = game.roundNo;
 
     const newMove = await prisma.move.create({
         data: {

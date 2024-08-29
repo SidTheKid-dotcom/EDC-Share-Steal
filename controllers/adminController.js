@@ -78,11 +78,23 @@ exports.endGame = async (req, res) => {
     res.send(endedGame);
 };
 
-exports.resetClock = (req, res) => {
+exports.resetClock = async (req, res) => {
     // Logic to reset the game clock
     const duration = req.body.duration || 30;
     const gameId = req.body.gameId;
-    const roundNumber = req.body.roundNumber;
+    
+    const updatedGame = await prisma.game.update({
+        where: {
+            gameId: gameId,
+        },
+        data: {
+            roundNo: {
+                increment: 1,  // This increments the current roundNo by 1
+            },
+        },
+    });
+
+    const roundNumber = updatedGame.roundNo;
 
     // Default to 30 seconds if not provided
     resetClock(duration, gameId, roundNumber);
