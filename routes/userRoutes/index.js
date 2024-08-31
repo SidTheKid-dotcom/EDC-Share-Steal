@@ -5,5 +5,6 @@ const userHTTPController = require('../../controllers/userController/userHTTPCon
 //const userAuth = require('../../middleware/userAuth');
 
 router.post('/connect-to-game', userHTTPController.connectToGame);
+router.post('/disconnect-from-game', userHTTPController.disconnectFromGame);
 
 module.exports = router;

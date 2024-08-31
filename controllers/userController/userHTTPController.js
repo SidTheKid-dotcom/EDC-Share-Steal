@@ -1,6 +1,9 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+const { broadcastToOne } = require('../ws-functions');
+const { getClientById, removeClient } = require('../../game-state/clients');
+
 exports.fetchGames = async (req, res) => {
 
     const allGames = await prisma.game.findMany({
@@ -45,3 +48,26 @@ exports.connectToGame = async (req, res) => {
     return res.status(200).send('Game connection ready, send webscoket connection');
 
 };
+
+exports.disconnectFromGame = async (req, res) => {
+    const { playerId } = req.body;
+
+    const client = getClientById(playerId);
+    if (client) {
+        broadcastToOne('Game disconnected', playerId);
+        client.close();
+        removeClient(client);
+    }
+
+    if (!playerId) {
+        return res.status(400).json({ error: 'Player ID is missing' });
+    }
+    await prisma.user.update({
+        where: { id: parseInt(playerId, 10) },
+        data: {
+            activeGameId: null
+        }
+    });
+
+    return res.status(200).send('Game disconnected');
+}

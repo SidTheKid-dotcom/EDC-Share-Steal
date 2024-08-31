@@ -43,8 +43,24 @@ exports.getDashboard = async (req, res) => {
 exports.fetchGoogleSpreadsheet = async (req, res) => {
     const response = await fetchGoogleSpreadsheet();
 
+    const valuesArray = response.data.values;
+
+    if (!valuesArray || valuesArray.length === 0) {
+        return res.status(404).json({ error: 'No data found in Google Sheets' });
+    }
+
+    for(const value of valuesArray) {
+        console.log(value[0] + " " + value[1]);
+        await prisma.user.create({
+            data: {
+                name: value[1],
+                password: '12345'
+            }
+        })
+    }
+
     return res.json({
-        "Response": response
+        "Response": valuesArray
     });
 }
 
@@ -78,7 +94,7 @@ exports.pairPlayers = async (req, res) => {
             orderBy: {
                 points: 'desc',
             },
-            take: 6,
+            take: 150,
         });
 
         // Step 2: Sort these top 4 players by their IDs in ascending order
