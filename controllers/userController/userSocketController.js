@@ -31,7 +31,7 @@ const userSocketController = async (socket, request) => {
         removeClient(socket);
     });
 
-    socket.on('message', message => {
+    socket.on('message', async message => {
         try {
             const data = JSON.parse(message);
 
@@ -40,8 +40,6 @@ const userSocketController = async (socket, request) => {
                 socket.send('Round is not active');
                 return;
             }
-
-            console.log('Received message:', data);
 
             switch (data.type) {
                 case 'submit':
@@ -60,54 +58,66 @@ async function handleSubmitAnswer(data, socket) {
     const { gameId, userId, move } = data;
 
     try {
-        // Fetch game, user, and check for existing move in a single query
-        const [game, user, existingMove] = await Promise.all([
-            prisma.game.findUnique({
-                where: { gameId },
-                select: { status: true, roundNo: true }
-            }),
-            prisma.user.findUnique({
-                where: { id: userId },
-                select: { partnerId: true }
-            }),
-            prisma.move.findFirst({
-                where: { gameId, playerId: userId }
-            })
-        ]);
+        // Start a transaction
+        const result = await prisma.$transaction(async (prisma) => {
 
-        // Check if game is active
-        if (!game || game.status !== 'ACTIVE') {
-            console.log('Game not found or is not active');
-            return;
-        }
+            const [game, user] = await Promise.all([
+                prisma.game.findUnique({
+                    where: { gameId },
+                    select: { status: true, roundNo: true }
+                }),
+                prisma.user.findUnique({
+                    where: { id: userId },
+                    select: { partnerId: true }
+                })
+            ]);
 
-        // Check if user exists and has a partner
-        if (!user || user.partnerId === null) {
-            console.log('User not found or partner not found');
-            return;
-        }
-
-        // Check if move already exists for this round
-        if (existingMove && existingMove.roundNo === game.roundNo) {
-            console.log('Move already exists');
-            return;
-        }
-
-        // Create new move
-        const newMove = await prisma.move.create({
-            data: {
-                gameId,
-                playerId: userId,
-                move,
-                roundNo: game.roundNo,
-                timestamp: new Date(),
+            // Check if game is active
+            if (!game || game.status !== 'ACTIVE') {
+                console.log('Game not found or is not active');
+                throw new Error('Game not found or is not active');
             }
+
+            // Check if user exists and has a partner
+            if (!user || user.partnerId === null) {
+                console.log('User not found or partner not found');
+                throw new Error('User not found or partner not found');
+            }
+
+            // Fetch existing moves after game is confirmed to be active
+            const existingMove = await prisma.move.findMany({
+                where: {
+                    gameId,
+                    playerId: userId,
+                    roundNo: parseInt(game.roundNo, 10) // Ensure roundNo is treated as an integer
+                }
+            });
+
+            // Check if move already exists for this round
+            if (existingMove && existingMove.length > 0) {
+                console.log('Move already exists');
+                throw new Error('Move already exists');
+            }
+
+            // Create new move
+            const newMove = await prisma.move.create({
+                data: {
+                    gameId,
+                    playerId: parseInt(userId, 10),
+                    move,
+                    roundNo: parseInt(game.roundNo, 10),
+                    timestamp: new Date(),
+                }
+            });
+
+            return newMove;
         });
 
-        socket.send("newMove", newMove);
+        console.log(result);
+        socket.send("newMove", result);
     } catch (error) {
         console.error('Error handling submit answer:', error);
-        socket.send('error', 'An error occurred while processing the move');
+        socket.send('error', error.message || 'An error occurred while processing the move');
     }
 }
 

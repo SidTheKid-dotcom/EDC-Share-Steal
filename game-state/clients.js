@@ -15,7 +15,7 @@ const getClients = () => {
 };
 
 const getClientById = (playerId) => {
-  return clients.find(c => c.playerId === JSON.stringify(playerId)).client;
+  return clients.find(c => c.playerId === JSON.stringify(playerId))?.client;
 };
 
 module.exports = {

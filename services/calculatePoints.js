@@ -25,7 +25,7 @@ exports.calculatePoints = async (gameId, roundNumber) => {
                     where: { gameId: gameId, roundNo: roundNumber, playerId: partnerId }
                 });
 
-                const partnerMove = partnerMoveRow.move.toUpperCase();
+                const partnerMove = partnerMoveRow ? partnerMoveRow.move.toUpperCase() : "SHARE";
 
                 console.log("Player: " + player.id + " Move: " + playerMove + " Partner: " + partnerId + " Move: " + partnerMove);
 

@@ -34,7 +34,7 @@ exports.getDashboard = async (req, res) => {
 
     broadcast(JSON.stringify({ type: 'games', games: allGames }));
 
-    res.json({
+    return res.json({
         message: 'Admin Dashboard',
         games: allGames
     });
