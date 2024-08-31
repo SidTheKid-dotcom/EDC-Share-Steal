@@ -14,14 +14,15 @@ datasource db {
 }
 
 model User {
-  id           Int    @id @default(autoincrement())
-  name         String
-  password     String
-  partnerId    Int?   @unique
-  points       Int?   @default(0)
-  activeGameId Int?
-  activeGame   Game?  @relation("GamePlayers", fields: [activeGameId], references: [gameId])
-  moves        Move[] @relation("PlayerMoves")
+  id              Int    @id @default(autoincrement())
+  name            String
+  password        String
+  partnerId       Int?   @unique
+  points          Int?   @default(0)
+  activeGameId    Int?
+  gameNoForSheets Int?   @default(1)
+  activeGame      Game?  @relation("GamePlayers", fields: [activeGameId], references: [gameId])
+  moves           Move[] @relation("PlayerMoves")
 }
 
 model Game {

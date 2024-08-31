@@ -10,7 +10,9 @@ router.post('/broadcast-to-game', adminAuth, adminController.adminBroadcastToGam
 
 router.get('/dashboard', adminAuth, adminController.getDashboard);
 router.get('/fetch-google-spreadsheet', adminController.fetchGoogleSpreadsheet);
+router.post('/send-to-google-spreadsheet', adminAuth, adminController.sendToGoogleSpreadsheet);
 router.put('/give-points-to-player', adminAuth, adminController.givePointsToPlayer)
+router.delete('/filter-players', adminAuth, adminController.filterPlayers);
 router.post('/pair-players', adminAuth, adminController.pairPlayers);
 router.post('/create-new-game', adminAuth, adminController.createNewGame);
 router.post('/start-game', adminAuth, adminController.startGame);

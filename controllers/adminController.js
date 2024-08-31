@@ -5,6 +5,7 @@ const { broadcast, broadcastToGame } = require("../controllers/ws-functions");
 
 const { startClock, resetClock } = require('../game-state/clock');
 const { fetchGoogleSpreadsheet } = require('../services/fetchGoogleSpreadsheet')
+const { sendToGoogleSpreadsheet } = require('../services/sendToGoogleSpreadsheet')
 
 exports.adminBroadcast = async (req, res) => {
 
@@ -49,7 +50,7 @@ exports.fetchGoogleSpreadsheet = async (req, res) => {
         return res.status(404).json({ error: 'No data found in Google Sheets' });
     }
 
-    for(const value of valuesArray) {
+    for (const value of valuesArray) {
         console.log(value[0] + " " + value[1]);
         await prisma.user.create({
             data: {
@@ -64,9 +65,42 @@ exports.fetchGoogleSpreadsheet = async (req, res) => {
     });
 }
 
+exports.sendToGoogleSpreadsheet = async (req, res) => {
+
+    const { gameId, gameNoForSheets } = req.body;
+
+    const players = await prisma.user.findMany({
+        where: {
+            activeGameId: gameId,
+            gameNoForSheets: gameNoForSheets
+        },
+        orderBy: {
+            points: 'desc',
+        },
+    });
+
+    console.log(players);
+
+    const response = await sendToGoogleSpreadsheet(gameNoForSheets, players);
+
+    await prisma.user.updateMany({
+        where: {
+            activeGameId: gameId
+        },
+        data: {
+            gameNoForSheets: gameNoForSheets + 1
+        }
+    });
+
+    console.log(response);
+
+    return res.status(200).send('Data Moved To Spreadsheet');
+}
+
 exports.givePointsToPlayer = async (req, res) => {
     try {
         const playerID = req.body.playerID;
+        const points = req.body.points
 
         if (!playerID) {
             return res.status(400).json({ error: 'Player ID is required' });
@@ -76,7 +110,7 @@ exports.givePointsToPlayer = async (req, res) => {
             where: { id: playerID },
             data: {
                 points: {
-                    increment: 10,
+                    increment: points,
                 },
             },
         });
@@ -87,23 +121,58 @@ exports.givePointsToPlayer = async (req, res) => {
     }
 }
 
-exports.pairPlayers = async (req, res) => {
+exports.filterPlayers = async (req, res) => {
     try {
-        // Get the top 150 players sorted by points in descending order, then by id in ascending order
+
+        const number = parseInt(req.body.number, 10);
+
+        if(!number) {
+            return res.status(400).json({ error: 'Number is required' });
+        }
+
         const topPlayers = await prisma.user.findMany({
             orderBy: {
                 points: 'desc',
             },
-            take: 150,
+            take: number,
+            select: {
+                id: true,
+            },
         });
 
+        // Step 2: Extract top user IDs
+        const topPlayerIds = topPlayers.map(player => player.id);
+
+        // Step 3: Delete users who are not in the top 30
+        await prisma.user.deleteMany({
+            where: {
+                NOT: {
+                    id: {
+                        in: topPlayerIds,
+                    },
+                },
+            },
+        });
+
+        return res.status(200).send(`Users deleted successfully keeping only top ${number} players`);
+    } catch (error) {
+        console.error('Error deleting users:', error);
+        return res.status(500).json({ error: 'Error filtering users' });
+    }
+}
+
+exports.pairPlayers = async (req, res) => {
+    try {
+        // Get the top 150 players sorted by points in descending order, then by id in ascending order
+        const players = await prisma.user.findMany({})
+
         // Step 2: Sort these top 4 players by their IDs in ascending order
-        topPlayers.sort((a, b) => a.id - b.id);
+        players.sort((a, b) => a.id - b.id);
 
         // Pair players and update partnerId
-        for (let i = 0; i < topPlayers.length; i += 2) {
-            const currentPlayer = topPlayers[i];
-            const nextPlayer = topPlayers[i + 1];
+        for (let i = 0; i < players.length; i += 2) {
+            const currentPlayer = players[i];
+            const nextPlayer = players[i + 1];
 
             if (nextPlayer) {
                 await prisma.user.update({
@@ -117,15 +186,6 @@ exports.pairPlayers = async (req, res) => {
                 });
             }
         }
-
-        // Update partnerId to null for players not in the top 150
-        await prisma.user.deleteMany({
-            where: {
-                id: {
-                    notIn: topPlayers.map(player => player.id),
-                },
-            },
-        });
 
         return res.send('Players paired and remaining players updated');
 
