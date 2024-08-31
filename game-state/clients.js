@@ -2,8 +2,8 @@
 
 let clients = [];
 
-const addClient = (client, playerId) => {
-  clients.push({ client, playerId });
+const addClient = (client, playerId, gameId) => {
+  clients.push({ client, playerId, gameId });
 };
 
 const removeClient = (client) => {

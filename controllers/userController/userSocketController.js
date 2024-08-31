@@ -2,14 +2,30 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 // Track connected clients
-let { addClient, removeClient, getClients } = require('../game-state/clients');
-const { getGlobalClock } = require('../game-state/clock');
+let { addClient, removeClient, getClients } = require('../../game-state/clients');
+const { getGlobalClock } = require('../../game-state/clock');
 
-const userController = (socket, request) => {
+const userSocketController = async (socket, request) => {
 
     const playerId = request.headers['playerid'];
+
+    if (!playerId) {
+        socket.send('Player ID is missing');
+        return;
+    }
+
+    const player = await prisma.user.findUnique({
+        where: { id: parseInt(playerId) },
+    });
+
+    if (!player.activeGameId) {
+        socket.send('Player is not in a game');
+        socket.close();
+        return;
+    }
+
     console.log('Plyaer ID: while connecting ', playerId);
-    addClient(socket, playerId);
+    addClient(socket, playerId, player.activeGameId);
 
     socket.on('close', () => {
         removeClient(socket);
@@ -19,7 +35,7 @@ const userController = (socket, request) => {
         try {
             const data = JSON.parse(message);
 
-            const globalClock = getGlobalClock();
+            const globalClock = getGlobalClock(player.activeGameId);
             if (!globalClock) {
                 socket.send('Round is not active');
                 return;
@@ -95,4 +111,4 @@ async function handleSubmitAnswer(data, socket) {
     }
 }
 
-module.exports = userController;
+module.exports = userSocketController;

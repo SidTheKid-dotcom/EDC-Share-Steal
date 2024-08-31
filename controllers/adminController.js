@@ -1,18 +1,75 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+const { broadcast, broadcastToGame } = require("../controllers/ws-functions");
+
 const { startClock, resetClock } = require('../game-state/clock');
+const { fetchGoogleSpreadsheet } = require('../services/fetchGoogleSpreadsheet')
+
+exports.adminBroadcast = async (req, res) => {
+
+    broadcast('Broadcasting to all clients');
+
+    res.json({
+        message: 'Successfully broadcast to all clients',
+    });
+};
+
+
+exports.adminBroadcastToGame = async (req, res) => {
+
+    const { gameId } = req.body;
+
+    broadcastToGame(`Broadcasting to all clients in game ${gameId}`, gameId);
+
+    return res.send('Broadcasting to all clients in game successful ' + gameId);
+};
 
 exports.getDashboard = async (req, res) => {
     // Logic to get and display the admin dashboard
 
     const allGames = await prisma.game.findMany();
 
+    console.log(allGames);
+
+    broadcast(JSON.stringify({ type: 'games', games: allGames }));
+
     res.json({
         message: 'Admin Dashboard',
         games: allGames
     });
 };
+
+exports.fetchGoogleSpreadsheet = async (req, res) => {
+    const response = await fetchGoogleSpreadsheet();
+
+    return res.json({
+        "Response": response
+    });
+}
+
+exports.givePointsToPlayer = async (req, res) => {
+    try {
+        const playerID = req.body.playerID;
+
+        if (!playerID) {
+            return res.status(400).json({ error: 'Player ID is required' });
+        }
+
+        await prisma.user.update({
+            where: { id: playerID },
+            data: {
+                points: {
+                    increment: 10,
+                },
+            },
+        });
+
+        return res.send('Points added successfully');
+    } catch (error) {
+        return res.status(500).json({ error: 'Error adding points' });
+    }
+}
 
 exports.pairPlayers = async (req, res) => {
     try {
@@ -21,7 +78,7 @@ exports.pairPlayers = async (req, res) => {
             orderBy: {
                 points: 'desc',
             },
-            take: 150,
+            take: 6,
         });
 
         // Step 2: Sort these top 4 players by their IDs in ascending order
@@ -46,22 +103,19 @@ exports.pairPlayers = async (req, res) => {
         }
 
         // Update partnerId to null for players not in the top 150
-        await prisma.user.updateMany({
+        await prisma.user.deleteMany({
             where: {
                 id: {
                     notIn: topPlayers.map(player => player.id),
                 },
             },
-            data: {
-                partnerId: null,
-            },
         });
 
-        res.send('Players paired and remaining players updated');
+        return res.send('Players paired and remaining players updated');
 
     } catch (error) {
         console.error(error);
-        res.status(500).send('An error occurred while pairing players');
+        return res.status(500).send('An error occurred while pairing players');
     }
 };
 
@@ -70,7 +124,7 @@ exports.createNewGame = async (req, res) => {
     res.send('New game created');
     const newGame = await prisma.game.create({});
 
-    res.send(newGame);
+    return res.send(newGame);
 };
 
 exports.startGame = async (req, res) => {
@@ -126,7 +180,7 @@ exports.endGame = async (req, res) => {
         }
     })
 
-    res.send(endedGame);
+    return res.send(endedGame);
 };
 
 exports.resetClock = async (req, res) => {

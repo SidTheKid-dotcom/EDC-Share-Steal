@@ -5,15 +5,17 @@ const app = express();
 app.use(express.json());
 
 const adminRoutes = require('./routes/adminRoutes');
+const userRoutes = require('./routes/userRoutes');
 app.use('/admin', adminRoutes);
+app.use('/user', userRoutes);
 
 // Set up a headless websocket server that prints any
 // events that come in.
 
-const userController = require('./controllers/userController');
+const userSocketController = require('./controllers/userController/userSocketController');
 
 const wsServer = new ws.Server({ noServer: true });
-wsServer.on('connection', userController);
+wsServer.on('connection', userSocketController);
 
 
 // `server` is a vanilla Node.js HTTP server, so use

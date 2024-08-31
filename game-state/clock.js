@@ -1,37 +1,42 @@
-const { broadcast } = require("../controllers/ws-functions");
+const { games } = require("googleapis/build/src/apis/games");
+const { broadcastToGame } = require("../controllers/ws-functions");
 const { calculatePoints } = require('../services/calculatePoints');
 
-let globalClock;
+let globalClocks = [];
 
 function startClock(duration, gameId, roundNumber) {
   let remainingTime = duration;
 
-  globalClock = setInterval(() => {
+  globalClocks[gameId] = setInterval(() => {
     remainingTime -= 1;
     if (remainingTime <= 0) {
-      clearInterval(globalClock);
+      clearInterval(globalClocks[gameId]);
       // Notify clients that the round has ended
-      broadcast(JSON.stringify({ type: 'round-end', roundNumber }));
+      broadcastToGame(JSON.stringify({ type: 'round-end', roundNumber }), gameId);
       
       console.log("calculate points");
       calculatePoints(gameId, roundNumber);
 
-      broadcast(JSON.stringify({ type: 'notice', message: "Points Calculated" }));
+      broadcastToGame(JSON.stringify({ type: 'notice', message: "Points Calculated" }), gameId);
     } else {
       // Broadcast the remaining time to clients
-      broadcast(JSON.stringify({ type: 'tick', remainingTime }));
+      broadcastToGame(JSON.stringify({ type: 'tick', remainingTime }), gameId);
     }
   }, 1000); // Update every second
 }
 
 function resetClock(duration, gameId, roundNumber) {
-  clearInterval(globalClock);
+  clearInterval(globalClocks[gameId]);
   startClock(duration, gameId, roundNumber);
-  broadcast(JSON.stringify({ type: 'round-start', roundNumber }));
+  broadcastToGame(JSON.stringify({ type: 'round-start', roundNumber }), gameId);
 }
 
-function getGlobalClock() {
-  return globalClock
+function getAllGlobalClocks() {
+  return globalClocks;
 }
 
-module.exports = { startClock, resetClock, getGlobalClock };    
+function getGlobalClock(gameId) {
+  return globalClocks[gameId];
+}
+
+module.exports = { startClock, resetClock, getGlobalClock, getAllGlobalClocks };    
