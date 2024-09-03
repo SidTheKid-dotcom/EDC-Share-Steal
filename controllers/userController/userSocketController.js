@@ -3,8 +3,9 @@ const prisma = new PrismaClient();
 const url = require('url');
 
 // Track connected clients
-let { addClient, removeClient, getClients } = require('../../game-state/clients');
+let { addClient, removeClient, getClientById, getClients } = require('../../game-state/clients');
 const { getGlobalClock } = require('../../game-state/clock');
+const { broadcastToOne } = require('../ws-functions');
 
 const userSocketController = async (socket, request) => {
 
@@ -30,7 +31,8 @@ const userSocketController = async (socket, request) => {
     addClient(socket, playerId, player.activeGameId);
 
     socket.on('close', () => {
-        removeClient(socket);
+        removeClient(getClientById(playerId));
+        console.log('Client disconnected: ', playerId);
     });
 
     socket.on('message', async message => {

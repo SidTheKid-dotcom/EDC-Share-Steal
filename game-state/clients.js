@@ -7,7 +7,9 @@ const addClient = (client, playerId, gameId) => {
 };
 
 const removeClient = (client) => {
-  clients = clients.filter(c => c !== client);
+  clients = clients.filter(c => {
+    return c.client !== client;
+  });
 };
 
 const getClients = () => {
@@ -15,7 +17,7 @@ const getClients = () => {
 };
 
 const getClientById = (playerId) => {
-  return clients.find(c => c.playerId === JSON.stringify(playerId))?.client;
+  return clients.find(c => c.playerId === playerId)?.client;
 };
 
 module.exports = {

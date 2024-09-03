@@ -14,10 +14,11 @@ exports.calculatePoints = async (gameId, roundNumber) => {
                 where: { id: move.playerId }
             });
             const playerMove = move.move.toUpperCase();
-            const partnerId = player.partnerId;
+            const playerId = parseInt(player.id, 10);
+            const partnerId = parseInt(player.partnerId, 10);
 
             // Create a unique key for the pair to avoid duplicate processing
-            const pairKey = [player.id, partnerId].sort().join('-');
+            const pairKey = [playerId, partnerId].sort().join('-');
 
             // Check if this pair has already been processed
             if (!processedPairs.has(pairKey)) {
@@ -27,14 +28,14 @@ exports.calculatePoints = async (gameId, roundNumber) => {
 
                 const partnerMove = partnerMoveRow ? partnerMoveRow.move.toUpperCase() : "SHARE";
 
-                console.log("Player: " + player.id + " Move: " + playerMove + " Partner: " + partnerId + " Move: " + partnerMove);
+                console.log("Player: " + playerId + " Move: " + playerMove + " Partner: " + partnerId + " Move: " + partnerMove);
 
                 if (playerMove === partnerMove && playerMove === "SHARE") {
-                    await updateBothPlayerPoints(player.id, partnerId, 50);
+                    await updateBothPlayerPoints(playerId, partnerId, 50);
 
-                    const client = getClientById(player.id);
+                    const client = getClientById(playerId);
                     if (client) {
-                        broadcastToOne(`Message for player ${player.id} Both Choose Share`, client);
+                        broadcastToOne(`Message for player ${playerId} Both Choose Share`, client);
                     }
 
                     const partnerClient = getClientById(partnerId);
@@ -45,9 +46,9 @@ exports.calculatePoints = async (gameId, roundNumber) => {
                 } else if (playerMove === "SHARE" && partnerMove === "STEAL") {
                     await updateSinglePlayerPoints(partnerId, 100);
 
-                    const client = getClientById(player.id);
+                    const client = getClientById(playerId);
                     if (client) {
-                        broadcastToOne(`Message for player ${player.id} Opponent chose Steal`, client);
+                        broadcastToOne(`Message for player ${playerId} Opponent chose Steal`, client);
                     }
 
                     const partnerClient = getClientById(partnerId);
@@ -56,11 +57,11 @@ exports.calculatePoints = async (gameId, roundNumber) => {
                     }
 
                 } else if (playerMove === "STEAL" && partnerMove === "SHARE") {
-                    await updateSinglePlayerPoints(player.id, 100);
+                    await updateSinglePlayerPoints(playerId, 100);
 
-                    const client = getClientById(player.id);
+                    const client = getClientById(playerId);
                     if (client) {
-                        broadcastToOne(`Message for player ${player.id} Opponent chose Share`, client);
+                        broadcastToOne(`Message for player ${playerId} Opponent chose Share`, client);
                     }
 
                     const partnerClient = getClientById(partnerId);
@@ -69,11 +70,11 @@ exports.calculatePoints = async (gameId, roundNumber) => {
                     }
 
                 } else if (playerMove === "STEAL" && partnerMove === "STEAL") {
-                    //await updateSinglePlayerPoints(player.id, -10);
+                    //await updateSinglePlayerPoints(playerId, -10);
 
-                    const client = getClientById(player.id);
+                    const client = getClientById(playerId);
                     if (client) {
-                        broadcastToOne(`Message for player ${player.id} Opponent chose Steal`, client);
+                        broadcastToOne(`Message for player ${playerId} Opponent chose Steal`, client);
                     }
 
                     const partnerClient = getClientById(partnerId);
