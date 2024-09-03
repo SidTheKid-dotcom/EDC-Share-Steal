@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const url = require('url');
 
 // Track connected clients
 let { addClient, removeClient, getClients } = require('../../game-state/clients');
@@ -7,7 +8,8 @@ const { getGlobalClock } = require('../../game-state/clock');
 
 const userSocketController = async (socket, request) => {
 
-    const playerId = request.headers['playerid'];
+    const queryObject = url.parse(request.url, true).query;
+    const playerId = parseInt(queryObject.playerid, 10);
 
     if (!playerId) {
         socket.send('Player ID is missing');

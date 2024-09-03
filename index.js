@@ -1,8 +1,16 @@
 const express = require('express');
 const ws = require('ws');
+const cors = require('cors');
 
 const app = express();
 app.use(express.json());
+
+const corsOptions = {
+  origin: 'http://localhost:5173', // your frontend URL
+  credentials: true, // Allow credentials (cookies, etc.) to be sent
+};
+
+app.use(cors(corsOptions));
 
 const adminRoutes = require('./routes/adminRoutes');
 const userRoutes = require('./routes/userRoutes');
