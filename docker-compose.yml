@@ -1,6 +1,9 @@
 version: '3'
 services:
   app:
+    build:
+      context: .  # Use the current directory as the build context
+      dockerfile: Dockerfile  # Specify the Dockerfile name if it's not the default
     image: ${DOCKER_USERNAME}/edc-steal-share:latest
     container_name: edc-steal-share
     ports:
