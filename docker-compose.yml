@@ -16,6 +16,8 @@ services:
       REDIS_PORT: 6379
       DATABASE_URL: ${DATABASE_URL} # Update with your DB credentials
     restart: always
+    networks:
+      - app-network
 
   redis:
     image: redis:alpine
@@ -24,6 +26,8 @@ services:
     ports:
       - "6379:6379"
     restart: always
+    networks:
+      - app-network
 
   postgres:  # Add PostgreSQL service
     image: postgres:alpine
@@ -35,6 +39,8 @@ services:
     ports:
       - "5432:5432"  # Expose PostgreSQL port
     restart: always
+    networks:
+      - app-network
 
 networks:
   app-network:
