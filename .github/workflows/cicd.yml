@@ -66,6 +66,8 @@ jobs:
             docker rm edc-steal-share || true
             docker run -d -p 8080:8080 --name edc-steal-share \
             -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            -e REDIS_HOST=redis \
+            -e REDIS_PORT=6379 \
             ${{ secrets.DOCKER_USERNAME }}/edc-steal-share:latest
             
             docker stop redis || true

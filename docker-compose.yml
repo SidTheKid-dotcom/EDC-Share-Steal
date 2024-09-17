@@ -35,3 +35,7 @@ services:
     ports:
       - "5432:5432"  # Expose PostgreSQL port
     restart: always
+
+networks:
+  app-network:
+    driver: bridge
