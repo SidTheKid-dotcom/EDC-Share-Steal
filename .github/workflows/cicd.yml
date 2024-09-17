@@ -74,4 +74,3 @@ jobs:
             docker stop edc-steal-share || true
             docker rm edc-steal-share || true
             docker run -d -p 8080:8080 --name edc-steal-share ${{ secrets.DOCKER_USERNAME }}/edc-steal-share:latest
-
