@@ -56,14 +56,14 @@ jobs:
 
       - name: Create .pem file from secret
         run: |
-          echo "${{ secrets.EC2_KEY_BASE64 }}" | base64 -d > edc-steal-share-aws-ec2-key.pem
-          chmod 600 edc-steal-share-aws-ec2-key.pem
-
+          echo "${{ secrets.EC2_KEY_BASE64 }}" | base64 -d > ec2-key.pem
+          chmod 600 ec2-key.pem  # Set the correct permissions
+      
       - name: Add EC2 Host Key to known_hosts
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-          
+      
       - name: Test SSH Connection
         run: |
           ssh -i edc-steal-share-aws-ec2-key.pem ubuntu@${{ secrets.EC2_HOST }} "echo 'SSH Connection Successful!'"
