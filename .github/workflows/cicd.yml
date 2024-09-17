@@ -32,24 +32,19 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: Install Docker Compose
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
-
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Set environment variables
-        run: echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" >> $GITHUB_ENV
-
       - name: Build and push Docker images
         run: |
-          docker-compose -f docker-compose.yml build
+          docker-compose -f docker-compose.yml build --progress=plain
           docker-compose -f docker-compose.yml push
+
+      - name: List Docker Images
+        run: docker images
 
       - name: Create .pem file from secret
         run: |
@@ -76,4 +71,3 @@ jobs:
             docker stop edc-steal-share || true
             docker rm edc-steal-share || true
             docker run -d -p 8080:8080 --name edc-steal-share ${{ secrets.DOCKER_USERNAME }}/edc-steal-share:latest
-            
