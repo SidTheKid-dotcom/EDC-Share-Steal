@@ -68,4 +68,4 @@ jobs:
             -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
             ${{ secrets.DOCKER_USERNAME }}/edc-steal-share:latest
 
-            docker run -d --redis-server redis -p 6379:6379 redis:alpine
+            docker run -d --name redis -p 6379:6379 redis:alpine
