@@ -54,17 +54,8 @@ jobs:
       - name: Verify Pushed Image
         run: docker pull sidvish/edc-steal-share:latest
 
-      - name: Create .ssh directory
-        run: mkdir -p ~/.ssh
-
-      - name: Add EC2 Host to Known Hosts
-        run: |
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-
       - name: Deploy to AWS EC2
-        uses: appleboy/ssh-action@v0.1.2
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
