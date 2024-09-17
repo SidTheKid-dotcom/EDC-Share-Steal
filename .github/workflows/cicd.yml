@@ -51,29 +51,12 @@ jobs:
           docker-compose -f docker-compose.yml build --progress=plain
           docker-compose -f docker-compose.yml push
 
-      - name: List Docker Images
-        run: docker images
-
-      - name: Create .pem file from secret
-        run: |
-          echo "${{ secrets.EC2_KEY_BASE64 }}" | base64 -d > edc-steal-share-aws-ec2-key.pem
-          chmod 600 edc-steal-share-aws-ec2-key.pem
-
-      - name: Add EC2 Host Key to known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Test SSH Connection
-        run: |
-          ssh -i edc-steal-share-aws-ec2-key.pem ubuntu@${{ secrets.EC2_HOST }} "echo 'SSH Connection Successful!'"
-
       - name: Deploy to AWS EC2
         uses: appleboy/ssh-action@v0.1.2
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
-          key: edc-steal-share-aws-ec2-key.pem
+          key: ${{ secrets.EC2_KEY }}
           script: |
             docker pull ${{ secrets.DOCKER_USERNAME }}/edc-steal-share:latest
             docker stop edc-steal-share || true

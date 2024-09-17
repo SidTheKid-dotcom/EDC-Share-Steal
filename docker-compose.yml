@@ -10,9 +10,11 @@ services:
       - "8080:8080"
     depends_on:
       - redis
+      - postgres  # Add PostgreSQL dependency
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      DATABASE_URL: database-edc-steal-share.c9ycq60kq2u4.ap-south-1.rds.amazonaws.com  # Update with your DB credentials
     restart: always
 
   redis:
@@ -20,4 +22,15 @@ services:
     container_name: redis
     ports:
       - "6379:6379"
+    restart: always
+
+  postgres:  # Add PostgreSQL service
+    image: postgres:alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: user  # Set your DB user
+      POSTGRES_PASSWORD: password  # Set your DB password
+      POSTGRES_DB: mydatabase  # Set your DB name
+    ports:
+      - "5432:5432"  # Expose PostgreSQL port
     restart: always
