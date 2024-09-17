@@ -57,6 +57,7 @@ jobs:
       - name: Create .pem file from secret
         run: |
           echo "${{ secrets.EC2_KEY_BASE64 }}" | base64 -d > edc-steal-share-aws-ec2-key.pem
+          chmod 600 edc-steal-share-aws-ec2-key.pem
       
       - name: Add EC2 Host Key to known_hosts
         run: |
