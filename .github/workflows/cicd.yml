@@ -55,7 +55,7 @@ jobs:
         run: docker pull sidvish/edc-steal-share:latest
 
       - name: Deploy to AWS EC2
-        uses: appleboy/ssh-action
+        uses: appleboy/ssh-action@v0.1.2
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
