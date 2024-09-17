@@ -50,6 +50,13 @@ jobs:
         run: |
           docker-compose -f docker-compose.yml build --progress=plain
           docker-compose -f docker-compose.yml push
+      
+      - name: Verify Pushed Image
+        run: docker pull sidvish/edc-steal-share:latest
+
+      - name: Test SSH Connection
+        run: |
+          ssh -i ${{ secrets.EC2_KEY }}.pem ubuntu@${{ secrets.EC2_HOST }} "echo 'SSH Connection Successful!'"
 
       - name: Deploy to AWS EC2
         uses: appleboy/ssh-action@v0.1.2
