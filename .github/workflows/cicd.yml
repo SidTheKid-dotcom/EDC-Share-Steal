@@ -73,7 +73,7 @@ jobs:
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
-          key: edc-steal-share-aws-ec2-key.pem
+          key: ./edc-steal-share-aws-ec2-key.pem
           script: |
             docker pull ${{ secrets.DOCKER_USERNAME }}/edc-steal-share:latest
             docker stop edc-steal-share || true
