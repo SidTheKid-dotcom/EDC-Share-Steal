@@ -68,14 +68,6 @@ jobs:
             -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
             ${{ secrets.DOCKER_USERNAME }}/edc-steal-share:latest
             
-            # Check if Redis is already running, and run it only if not found
-            if [ ! "$(docker ps -q -f name=redis)" ]; then
-              if [ "$(docker ps -aq -f status=exited -f name=redis)" ]; then
-                # Clean up exited Redis container
-                docker rm redis
-              fi
-              # Start Redis container
-              docker run -d --name redis -p 6379:6379 redis:alpine
-            else
-              echo "Redis is already running."
-            fi
+            docker stop redis || true
+            docker rm redis || true
+            docker run -d --name redis -p 6379:6379 redis:alpine
