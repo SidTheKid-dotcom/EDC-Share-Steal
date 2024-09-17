@@ -1,8 +1,11 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+const axios = require('axios')
+
 const { broadcastToOne } = require('../ws-functions');
 const { getClientById, removeClient } = require('../../game-state/clients');
+const jwt = require('jsonwebtoken');
 
 exports.fetchGames = async (req, res) => {
 
@@ -24,28 +27,71 @@ exports.fetchGames = async (req, res) => {
 
 exports.connectToGame = async (req, res) => {
 
-    const { gameId, playerId } = req.body;
+    const { captchaToken, gameId, playerId, playerName } = req.body;
+
+    if (!captchaToken) {
+        return res.status(400).json({ message: "Captcha token is missing." });
+    }
 
     if (!gameId || !playerId) {
         return res.status(400).json({ error: 'Game ID or player ID is missing' });
     }
 
-    const game = await prisma.game.findUnique({
-        where: { gameId: parseInt(gameId, 10) },
-    });
+    try {
+        const response = await axios.post(
+            `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.GOOGLE_SERVER_CAPTCHA_KEY}&response=${captchaToken}`
+        );
 
-    if (game.status !== 'ACTIVE') {
-        return res.status(400).json({ error: 'Game is not active' });
-    }
-
-    await prisma.user.update({
-        where: { id: parseInt(playerId, 10) },
-        data: {
-            activeGameId: parseInt(gameId, 10)
+        const data = response.data;
+        if (!data.success) {
+            return res.status(400).json({ message: "Captcha verification failed." });
         }
-    });
 
-    return res.status(200).send('Game connection ready, send webscoket connection');
+        const game = await prisma.game.findUnique({
+            where: { gameId: parseInt(gameId, 10) },
+        });
+
+        if (game.status !== 'ACTIVE') {
+            return res.status(400).json({ error: 'Game is not active' });
+        }
+
+        await prisma.user.update({
+            where: {
+                id: parseInt(playerId, 10),
+                name: playerName.toUpperCase()
+            },
+            data: {
+                activeGameId: parseInt(gameId, 10)
+            }
+        });
+
+        const token = jwt.sign(
+            {
+                role: "PLAYER",
+                gameId: parseInt(gameId, 10),
+                playerId: parseInt(playerId, 10),
+            },
+            process.env.JWT_SECRET_PLAYER,
+            { expiresIn: '1h' }
+        );
+
+        // Store token in a cookie, setting its expiration to match the JWT's expiration time
+        res.cookie('token', token, {
+            httpOnly: true,    // Prevent client-side JavaScript from accessing the cookie
+            secure: process.env.NODE_ENV === 'production', // Send over HTTPS only in production
+            sameSite: 'strict', // Prevent CSRF
+            maxAge: 1 * 60 * 60 * 1000,    // 1 hours in milliseconds
+        });
+
+        return res.status(200).json({
+            message: 'Game connection ready, send webscoket connection',
+        });
+
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: 'Wrong player ID or Name' });
+    }
 
 };
 

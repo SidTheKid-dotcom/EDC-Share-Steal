@@ -2,22 +2,24 @@ const express = require('express');
 const router = express.Router();
 
 const adminController = require('../../controllers/adminController');
-const adminAuth = require('../../middleware/adminAuth');
 
+// Admins dont have a register endpoint for secutiry reasons,
+// so we will manually insert them into the db
 
-router.post('/broadcast', adminAuth, adminController.adminBroadcast);
-router.post('/broadcast-to-game', adminAuth, adminController.adminBroadcastToGame);
+router.post('/broadcast', adminController.adminBroadcast);
+router.post('/broadcast-to-game', adminController.adminBroadcastToGame);
 
-router.get('/dashboard', adminAuth, adminController.getDashboard);
+router.get('/dashboard', adminController.getDashboard);
 router.get('/fetch-google-spreadsheet', adminController.fetchGoogleSpreadsheet);
-router.post('/send-to-google-spreadsheet', adminAuth, adminController.sendToGoogleSpreadsheet);
-router.put('/give-points-to-player', adminAuth, adminController.givePointsToPlayer)
-router.delete('/filter-players', adminAuth, adminController.filterPlayers);
-router.post('/pair-players', adminAuth, adminController.pairPlayers);
-router.post('/create-new-game', adminAuth, adminController.createNewGame);
-router.post('/start-game', adminAuth, adminController.startGame);
-router.post('/end-game', adminAuth, adminController.endGame);
-router.post('/reset-clock', adminAuth, adminController.resetClock);
-router.get('/game-stats', adminAuth, adminController.getGameStats);
+router.post('/send-to-google-spreadsheet', adminController.sendToGoogleSpreadsheet);
+router.get('/get-all-players', adminController.getAllPlayers);
+router.put('/give-points-to-player', adminController.givePointsToPlayer)
+router.delete('/filter-players', adminController.filterPlayers);
+router.post('/pair-players', adminController.pairPlayers);
+router.post('/create-new-game', adminController.createNewGame);
+router.post('/start-game', adminController.startGame);
+router.post('/end-game', adminController.endGame);
+router.post('/reset-clock', adminController.resetClock);
+router.get('/game-stats', adminController.getGameStats);
 
 module.exports = router;

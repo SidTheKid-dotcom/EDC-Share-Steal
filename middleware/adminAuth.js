@@ -1,14 +1,28 @@
-// middleware/adminAuth.js
+const jwt = require('jsonwebtoken');
 
 const adminAuth = (req, res, next) => {
-    // Implement your authentication logic here
-    // Example: Check if the user has an admin role
-    /* if (req.user && req.user.role === 'admin') {
-        next(); // User is authenticated and is an admin
+  // Get the token from the cookies
+  const token = req.cookies.token;
+
+  // If there's no token, return an access denied error
+  if (!token) {
+    return res.status(403).json({ message: 'Access denied. No token provided.' });
+  }
+
+  try {
+    // Verify the token using the secret key
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Check if the user role is 'admin'
+    if (decoded && decoded.role === 'ADMIN') {
+      next(); // User is authenticated and has admin privileges
     } else {
-        res.status(403).send('Access denied');
-    } */
-   next();
+      return res.status(403).json({ message: 'Access denied. Admin privileges required.' });
+    }
+  } catch (err) {
+    // If token verification fails, return an error
+    return res.status(400).json({ message: 'Invalid token.' });
+  }
 };
 
 module.exports = adminAuth;
