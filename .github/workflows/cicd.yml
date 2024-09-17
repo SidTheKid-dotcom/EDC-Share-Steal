@@ -56,6 +56,10 @@ jobs:
           echo "${{ secrets.EC2_KEY_BASE64 }}" | base64 -d > edc-steal-share-aws-ec2-key.pem
           chmod 600 edc-steal-share-aws-ec2-key.pem
 
+      - name: Test SSH Connection
+        run: |
+          ssh -i edc-steal-share-aws-ec2-key.pem ubuntu@${{ secrets.EC2_HOST }} "echo 'SSH Connection Successful!'"
+
       - name: Deploy to AWS EC2
         uses: appleboy/ssh-action@v0.1.2
         with:
