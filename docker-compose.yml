@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 services:
   app:
     build:
@@ -9,8 +9,10 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - redis
-      - postgres
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -28,6 +30,12 @@ services:
     restart: always
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   postgres:
     image: postgres:alpine
@@ -41,6 +49,12 @@ services:
     restart: always
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
 networks:
   app-network:
