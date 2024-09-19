@@ -64,10 +64,15 @@ jobs:
             docker stop redis || true
             docker rm redis || true
             docker run -d --name redis -p 6379:6379 redis:alpine
+            
+            # Timeout till the redis container starts
+            dockerize -wait tcp://localhost:6379 -timeout 20s
 
             docker pull ${{ secrets.DOCKER_USERNAME }}/edc-steal-share:latest
+
             docker stop edc-steal-share || true
             docker rm edc-steal-share || true
+            
             docker run -d -p 8080:8080 --name edc-steal-share \
             -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
             ${{ secrets.DOCKER_USERNAME }}/edc-steal-share:latest
