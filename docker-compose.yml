@@ -20,6 +20,9 @@ services:
     restart: always
     networks:
       - app-network
+    links:
+      - redis
+      - postgres
 
   redis:
     image: redis:alpine
