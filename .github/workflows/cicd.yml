@@ -52,7 +52,7 @@ jobs:
           docker-compose -f docker-compose.yml push
       
       - name: Verify Pushed Image
-        run: docker pull sidvish/edc-steal-share:latest
+        run: docker pull ${{ secrets.DOCKER_USERNAME }}/edc-steal-share:latest
 
       - name: Deploy to AWS EC2
         uses: appleboy/ssh-action@master
@@ -61,20 +61,31 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
           script: |
+            # Create a network for Redis and your application
+            docker network create app-network || true
+
+            # Stop and remove existing containers
             docker stop redis || true
             docker rm redis || true
-            docker run -d --name redis -p 6379:6379 redis:alpine
             
-            # Timeout till the redis container starts
+            # Start Redis container
+            docker run -d --name redis --network app-network -p 6379:6379 redis:alpine
+            
+            # Timeout till the Redis container starts
             dockerize -wait tcp://localhost:6379 -timeout 20s
 
+            # Pull the latest image
             docker pull ${{ secrets.DOCKER_USERNAME }}/edc-steal-share:latest
 
+            # Stop and remove existing application container
             docker stop edc-steal-share || true
             docker rm edc-steal-share || true
             
-            docker run -d -p 8080:8080 --name edc-steal-share \
-            -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
-            -e REDIS_HOST=redis \
-            -e REDIS_PORT=6379 \
-            ${{ secrets.DOCKER_USERNAME }}/edc-steal-share:latest
+            # Start the application container
+            docker run -d --name edc-steal-share \
+              --network app-network \
+              -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
+              -e REDIS_HOST=redis \
+              -e REDIS_PORT=6379 \
+              -p 8080:8080 \
+              ${{ secrets.DOCKER_USERNAME }}/edc-steal-share:latest
