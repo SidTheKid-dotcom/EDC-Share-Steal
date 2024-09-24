@@ -14,6 +14,8 @@ const fetchGoogleSpreadsheet = async () => {
         // Load the service account key JSON file
         const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY);
 
+        console.log(serviceAccount);
+
         // Configure a JWT auth client
         const auth = new google.auth.JWT(
             serviceAccount.client_email,
