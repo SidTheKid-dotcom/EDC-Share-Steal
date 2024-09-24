@@ -87,5 +87,10 @@ jobs:
               -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
               -e REDIS_HOST=redis \
               -e REDIS_PORT=6379 \
+              -e ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }} \
+              -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+              -e JWT_SECRET_PLAYER=${{ secrets.JWT_SECRET_PLAYER }} \
+              -e SERVICE_ACCOUNT_KEY=${{ secrets.SERVICE_ACCOUNT_KEY }} \
+              -e GOOGLE_SERVER_CAPTCHA_KEY=${{ secrets.GOOGLE_SERVER_CAPTCHA_KEY }} \
               -p 8080:8080 \
               ${{ secrets.DOCKER_USERNAME }}/edc-steal-share:latest
