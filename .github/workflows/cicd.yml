@@ -70,9 +70,6 @@ jobs:
             
             # Start Redis container
             docker run -d --name redis --network app-network -p 6379:6379 redis:alpine
-            
-            # Timeout till the Redis container starts
-            dockerize -wait tcp://localhost:6379 -timeout 20s
 
             # Pull the latest image
             docker pull ${{ secrets.DOCKER_USERNAME }}/edc-steal-share:latest
