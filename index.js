@@ -68,11 +68,11 @@ server.on('upgrade', (request, socket, head) => {
 
     const playerId = parseInt(decoded.playerId, 10);
 
-    if (!await connectionLimiter(playerId)) {
+    /* if (!await connectionLimiter(playerId)) {
       socket.write('HTTP/1.1 429 Too Many Connection Requests\r\n\r\n');
       socket.destroy();
       return;
-    }
+    } */
 
     wsServer.handleUpgrade(request, socket, head, (ws) => {
       wsServer.emit('connection', ws, request, decoded); // Optionally pass decoded token
