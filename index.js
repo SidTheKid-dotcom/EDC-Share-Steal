@@ -51,8 +51,7 @@ server.on('upgrade', (request, socket, head) => {
   const cookies = request.headers.cookie;
   const token = cookies ? cookies.split('; ').find(row => row.startsWith('token='))?.split('=')[1] : null;
   
-  console.log('working???');  
-  console.log('updrage request: ', request);
+  console.log('updrage request headers: ', request.headers);
   console.log('server side websocket upgrade', cookies, token);
 
   if (!token) {

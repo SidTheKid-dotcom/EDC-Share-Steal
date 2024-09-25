@@ -79,7 +79,7 @@ exports.connectToGame = async (req, res) => {
         res.cookie('token', token, {
             httpOnly: true,    // Prevent client-side JavaScript from accessing the cookie
             secure: process.env.NODE_ENV === 'production', // Send over HTTPS only in production
-            sameSite: 'strict', // Prevent CSRF
+            //sameSite: 'strict', // Prevent CSRF
             maxAge: 1 * 60 * 60 * 1000,    // 1 hours in milliseconds
         });
 
