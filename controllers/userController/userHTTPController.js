@@ -77,10 +77,10 @@ exports.connectToGame = async (req, res) => {
 
         // Store token in a cookie, setting its expiration to match the JWT's expiration time
         res.cookie('token', token, {
-            httpOnly: true,    // Prevent client-side JavaScript from accessing the cookie
-            secure: process.env.NODE_ENV === 'production', // Send over HTTPS only in production
-            //sameSite: 'strict', // Prevent CSRF
-            maxAge: 1 * 60 * 60 * 1000,    // 1 hours in milliseconds
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            domain: 'localhost',  // Or the appropriate domain
+            maxAge: 1 * 60 * 60 * 1000, // 1 hour
         });
 
         return res.status(200).json({
