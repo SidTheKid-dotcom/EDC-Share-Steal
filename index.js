@@ -15,7 +15,7 @@ app.use(cookieParser());
 // Configure CORS to allow only your frontend
 app.use(
   cors({
-    origin: "http://localhost:5173", // Allow only your frontend
+    origin: ["http://localhost:5173", "ws://localhost:5173"], // Allow only your frontend
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Specify allowed methods
     allowedHeaders: "Content-Type,Authorization", // Specify allowed headers
     credentials: true, // Allow cookies and authentication headers
@@ -69,11 +69,11 @@ server.on('upgrade', (request, socket, head) => {
 
     const playerId = parseInt(decoded.playerId, 10);
 
-    /* if (!await connectionLimiter(playerId)) {
+    if (!await connectionLimiter(playerId)) {
       socket.write('HTTP/1.1 429 Too Many Connection Requests\r\n\r\n');
       socket.destroy();
       return;
-    } */
+    }
 
     wsServer.handleUpgrade(request, socket, head, (ws) => {
       wsServer.emit('connection', ws, request, decoded); // Optionally pass decoded token
