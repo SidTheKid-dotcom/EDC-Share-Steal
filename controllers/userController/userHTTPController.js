@@ -80,6 +80,7 @@ exports.connectToGame = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             domain: 'localhost',  // Or the appropriate domain
+            sameSite: 'none',
             maxAge: 1 * 60 * 60 * 1000, // 1 hour
         });
 
