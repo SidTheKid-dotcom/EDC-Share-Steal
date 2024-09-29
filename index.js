@@ -49,8 +49,8 @@ const server = app.listen(8080, () => {
 });
 
 server.on('upgrade', (request, socket, head) => {
-  const query = url.parse(req.url, true).query;
-  const token = query.token;
+  const query = url.parse(request.url, true).query;
+  const token = query.token.split(' ')[1];
 
   console.log('updrage request headers: ', request.headers);
   console.log('server side websocket upgrade', token);
