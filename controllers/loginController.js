@@ -21,14 +21,15 @@ exports.login = async (req, res) => {
   );
 
   // Store token in a cookie, setting its expiration to match the JWT's expiration time
-  res.cookie('token', token, {
+  /* res.cookie('token', token, {
     httpOnly: true,    // Prevent client-side JavaScript from accessing the cookie
     secure: process.env.NODE_ENV === 'production', // Send over HTTPS only in production
     //sameSite: 'strict', // Prevent CSRF
     maxAge: 8 * 60 * 60 * 1000,    // 8 hours in milliseconds
-  });
+  }); */
 
   return res.json({
     message: "Admin logged in",
+    token: token
   });
 };

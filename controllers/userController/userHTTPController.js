@@ -76,16 +76,17 @@ exports.connectToGame = async (req, res) => {
         );
 
         // Store token in a cookie, setting its expiration to match the JWT's expiration time
-        res.cookie('token', token, {
+        /* res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             domain: 'localhost',  // Or the appropriate domain
             sameSite: 'none',
             maxAge: 1 * 60 * 60 * 1000, // 1 hour
-        });
+        }); */
 
         return res.status(200).json({
             message: 'Game connection ready, send webscoket connection',
+            token: token
         });
 
     }

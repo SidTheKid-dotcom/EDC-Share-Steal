@@ -1,6 +1,7 @@
 const express = require("express");
 const ws = require("ws");
 const cors = require("cors");
+const url = require('url');
 const app = express();
 
 const jwt = require('jsonwebtoken');
@@ -48,11 +49,11 @@ const server = app.listen(8080, () => {
 });
 
 server.on('upgrade', (request, socket, head) => {
-  const cookies = request.headers.cookie;
-  const token = cookies ? cookies.split('; ').find(row => row.startsWith('token='))?.split('=')[1] : null;
-  
+  const query = url.parse(req.url, true).query;
+  const token = query.token;
+
   console.log('updrage request headers: ', request.headers);
-  console.log('server side websocket upgrade', cookies, token);
+  console.log('server side websocket upgrade', token);
 
   if (!token) {
     socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
