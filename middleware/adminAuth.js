@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 
 const adminAuth = (req, res, next) => {
   // Get the token from the cookies
-  const token = req.cookies.token;
+  const token = req.headers.token;
 
   // If there's no token, return an access denied error
   if (!token) {
