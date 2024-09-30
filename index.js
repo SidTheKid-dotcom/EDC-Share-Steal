@@ -13,10 +13,10 @@ const userSocketController = require("./controllers/userController/userSocketCon
 app.use(express.json());
 app.use(cookieParser());
 
-// Configure CORS to allow only your frontend
+// Configure CORS to allow only your anywhere
 app.use(
   cors({
-    origin: ["http://localhost:5173", "ws://localhost:5173"], // Allow only your frontend
+    origin: "*", // Allow requests from any origin
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Specify allowed methods
     allowedHeaders: "Content-Type,Authorization", // Specify allowed headers
     credentials: true, // Allow cookies and authentication headers
