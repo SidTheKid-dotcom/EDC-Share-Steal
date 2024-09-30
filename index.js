@@ -16,7 +16,7 @@ app.use(cookieParser());
 // Configure CORS to allow only your anywhere
 app.use(
   cors({
-    origin: ["http://edc-pict.site.s3-website.ap-south-1.amazonaws.com", "ws://edc-pict.site.s3-website.ap-south-1.amazonaws.com", "http://localhost:5173", "ws://localhost:5173"], // Allow requests from any origin
+    origin: ["http://edc-pict.site.s3-website.ap-south-1.amazonaws.com", "ws://edc-pict.site.s3-website.ap-south-1.amazonaws.com", "https://edc-steal-share-frontend.vercel.app/", "wss://edc-steal-share-frontend.vercel.app/", "http://localhost:5173", "ws://localhost:5173"], // Allow requests from any origin
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Specify allowed methods
     allowedHeaders: "Content-Type,Authorization", // Specify allowed headers
     credentials: true, // Allow cookies and authentication headers
