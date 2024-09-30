@@ -8,7 +8,7 @@ const fetchGoogleSpreadsheet = async () => {
         const spreadsheetId = '15a3pWTYd-8Vj0UlpYdNRdcJNggilSe56ySP2Re46peE';
 
         // Replace with your desired sheet name and range
-        const range = 'Players!A1:B10';
+        const range = 'Players!A1:B180';
 
 
         // Load the service account key JSON file
