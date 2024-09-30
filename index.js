@@ -31,6 +31,11 @@ const adminAuth = require("./middleware/adminAuth");
 const userRoutes = require("./routes/userRoutes");
 const loginRoutes = require("./routes/login");
 
+// route added to check domain resolution
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+})
+
 app.use("/login", loginRoutes);
 app.use("/admin", adminAuth, adminRoutes);
 app.use("/user", userRoutes);
