@@ -318,3 +318,31 @@ exports.getGameStats = (req, res) => {
   // Logic to retrieve game stats
   res.json({ stats: "Game statistics data" });
 };
+
+exports.deleteAllData = async (req, res) => {
+  // Logic to delete all data
+  await prisma.$transaction([
+    prisma.game.deleteMany({}),
+    prisma.user.deleteMany({}),
+    prisma.move.deleteMany({}),
+  ]);
+
+  return res.send("All data deleted");
+};
+
+exports.truncateTables = async (req, res) => {
+  try {
+    // Logic to delete all data
+    await prisma.$transaction([
+      prisma.$executeRaw`TRUNCATE TABLE "Game" RESTART IDENTITY CASCADE;`,
+      prisma.$executeRaw`TRUNCATE TABLE "User" RESTART IDENTITY CASCADE;`,
+      prisma.$executeRaw`TRUNCATE TABLE "Move" RESTART IDENTITY CASCADE;`,
+    ]);
+
+    return res.send("All tables truncated and primary keys reset");
+  } catch (error) {
+    console.error("Error truncating tables:", error);
+    return res.status(500).send("Error truncating tables");
+  }
+};
+
