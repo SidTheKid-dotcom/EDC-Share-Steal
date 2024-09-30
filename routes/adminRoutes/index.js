@@ -22,4 +22,7 @@ router.post('/end-game', adminController.endGame);
 router.post('/reset-clock', adminController.resetClock);
 router.get('/game-stats', adminController.getGameStats);
 
+router.delete('/delete-all-data', adminController.deleteAllData);
+router.post('/truncate-tables', adminController.truncateTables);
+
 module.exports = router;
