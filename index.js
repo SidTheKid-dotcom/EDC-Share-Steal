@@ -69,24 +69,31 @@ server.on('upgrade', (request, socket, head) => {
     return;
   }
 
-  jwt.verify(token, process.env.JWT_SECRET_PLAYER, async (err, decoded) => {
-    if (err) {
-      socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-      socket.destroy();
-      return;
-    }
+  try {
+    jwt.verify(token, process.env.JWT_SECRET_PLAYER, async (err, decoded) => {
+      if (err) {
+        socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+        socket.destroy();
+        return;
+      }
 
-    const playerId = parseInt(decoded.playerId, 10);
+      const playerId = parseInt(decoded.playerId, 10);
 
-    if (!await connectionLimiter(playerId)) {
-      socket.write('HTTP/1.1 429 Too Many Connection Requests\r\n\r\n');
-      socket.destroy();
-      return;
-    }
+      if (!await connectionLimiter(playerId)) {
+        socket.write('HTTP/1.1 429 Too Many Connection Requests\r\n\r\n');
+        socket.destroy();
+        return;
+      }
 
-    wsServer.handleUpgrade(request, socket, head, (ws) => {
-      wsServer.emit('connection', ws, request, decoded); // Optionally pass decoded token
+      wsServer.handleUpgrade(request, socket, head, (ws) => {
+        wsServer.emit('connection', ws, request, decoded); // Optionally pass decoded token
+      });
     });
-  });
+  }
+  catch (err) {
+    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+    socket.close();
+    return;
+  }
 });
 
