@@ -86,6 +86,7 @@ jobs:
               -e REDIS_HOST=redis \
               -e REDIS_PORT=6379 \
               -e ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }} \
+              -e OC_PASSWORD=${{ secrets.OC_PASSWORD }} \
               -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
               -e JWT_SECRET_PLAYER=${{ secrets.JWT_SECRET_PLAYER }} \
               -e SERVICE_ACCOUNT_KEY=${{ secrets.SERVICE_ACCOUNT_KEY }} \
