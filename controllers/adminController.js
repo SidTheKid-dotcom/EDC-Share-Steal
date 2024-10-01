@@ -249,12 +249,11 @@ exports.createNewGame = async (req, res) => {
 
   try {
     const newGame = await prisma.game.create({});
+    return res.send(newGame);
   }
   catch (error) {
     console.log(error);
   }
-
-  return res.send(newGame);
 };
 
 exports.startGame = async (req, res) => {
