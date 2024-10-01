@@ -63,7 +63,7 @@ exports.connectToGame = async (req, res) => {
             return res.status(400).json({ error: 'Game is not active' });
         }
 
-        await prisma.user.update({
+        const updatedUser = await prisma.user.update({
             where: {
                 id: parseInt(playerId, 10),
                 name: playerName.toUpperCase()
@@ -72,6 +72,11 @@ exports.connectToGame = async (req, res) => {
                 activeGameId: parseInt(gameId, 10)
             }
         });
+
+        // Check if the update was successful
+        if (!updatedUser) {
+            return res.status(400).json({ error: 'User update failed. Invalid player ID or name.' });
+        }
 
         const token = jwt.sign(
             {
@@ -105,6 +110,16 @@ exports.connectToGame = async (req, res) => {
 
 };
 
+/*************  ✨ Codeium Command ⭐  *************/
+/**
+ * Disconnect player from game
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @property {number} req.body.playerId - Player ID
+ * @returns {Promise<void>}
+ * @throws {Error} If player ID is missing or error occurs
+ */
+/******  10ad2b4f-0c08-44e8-a40f-575d48f7560a  *******/
 exports.disconnectFromGame = async (req, res) => {
     const { playerId } = req.body;
 
