@@ -21,6 +21,7 @@ router.post('/start-game', adminController.startGame);
 router.post('/end-game', adminController.endGame);
 router.post('/reset-clock', adminController.resetClock);
 router.get('/game-stats', adminController.getGameStats);
+router.get('/get-players-by-id', adminController.getPlayersById);
 
 router.delete('/delete-all-data', adminController.deleteAllData);
 router.post('/truncate-tables', adminController.truncateTables);
