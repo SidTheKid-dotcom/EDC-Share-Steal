@@ -28,9 +28,11 @@ app.use(
 const adminRoutes = require("./routes/adminRoutes");
 const adminAuth = require("./middleware/adminAuth");
 
+const ocRoutes = require("./routes/ocRoutes");
+const ocAuth = require("./middleware/ocAuth");
+
 const userRoutes = require("./routes/userRoutes");
 const loginRoutes = require("./routes/login");
-const ocAuth = require("./middleware/ocAuth");
 
 // route added to check domain resolution
 app.get('/', (req, res) => {
