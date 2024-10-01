@@ -36,8 +36,8 @@ model Move {
   roundNo   Int
   timestamp DateTime? @default(now())
   moveId    Int       @id @default(autoincrement())
-  game      Game      @relation("GameMoves", fields: [gameId], references: [gameId])
-  player    User      @relation("PlayerMoves", fields: [playerId], references: [id])
+  game      Game      @relation("GameMoves", fields: [gameId], references: [gameId], onDelete: Cascade)
+  player    User      @relation("PlayerMoves", fields: [playerId], references: [id], onDelete: Cascade)
 }
 
 enum GameStatus {

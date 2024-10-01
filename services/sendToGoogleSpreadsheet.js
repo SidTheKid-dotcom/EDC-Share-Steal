@@ -25,7 +25,7 @@ const sendToGoogleSpreadsheet = async (gameNo, players) => {
         const sheets = google.sheets({ version: 'v4', auth });
 
         // Format players data for Google Sheets
-        const values = players.map(player => [player.name, player.points]);
+        const values = players.map(player => [player.id, player.points]);
 
         const resource = {
             values,
