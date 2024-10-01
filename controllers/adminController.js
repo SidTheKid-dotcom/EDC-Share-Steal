@@ -245,8 +245,6 @@ exports.pairPlayers = async (req, res) => {
 
 exports.createNewGame = async (req, res) => {
   // Logic to create a new game
-  res.send("New game created");
-
   try {
     const newGame = await prisma.game.create({});
     return res.send(newGame);
