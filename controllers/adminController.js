@@ -413,7 +413,7 @@ exports.truncateTables = async (req, res) => {
   }
 };
 
-exports.getPlayerIds = async (req, res) => {
+exports.getPlayersById = async (req, res) => {
   try {
     const players = await prisma.user.findMany();
     const playerIds = players.map((player) => player.id);
