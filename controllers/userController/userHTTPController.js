@@ -110,16 +110,7 @@ exports.connectToGame = async (req, res) => {
 
 };
 
-/*************  ✨ Codeium Command ⭐  *************/
-/**
- * Disconnect player from game
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @property {number} req.body.playerId - Player ID
- * @returns {Promise<void>}
- * @throws {Error} If player ID is missing or error occurs
- */
-/******  10ad2b4f-0c08-44e8-a40f-575d48f7560a  *******/
+
 exports.disconnectFromGame = async (req, res) => {
     const { playerId } = req.body;
 
