@@ -165,6 +165,7 @@ exports.filterPlayers = async (req, res) => {
       return res.status(400).json({ error: "Number is required" });
     }
 
+    // Step 1: Find the top players
     const topPlayers = await prisma.user.findMany({
       orderBy: {
         points: "desc",
@@ -178,20 +179,42 @@ exports.filterPlayers = async (req, res) => {
     // Step 2: Extract top user IDs
     const topPlayerIds = topPlayers.map((player) => player.id);
 
-    // Step 3: Delete users who are not in the top 30
-    await prisma.user.deleteMany({
+    // Step 3: Find users who are not in the top players
+    const usersToDelete = await prisma.user.findMany({
       where: {
-        NOT: {
-          id: {
-            in: topPlayerIds,
-          },
+        id: {
+          notIn: topPlayerIds,
         },
       },
     });
 
-    return res
-      .status(200)
-      .send(`Users deleted successfully keeping only top ${number} players`);
+    if (usersToDelete.length === 0) {
+      return res.status(200).json({ message: "No users to delete." });
+    }
+
+    // Step 4: Delete moves of users who are not in the top players
+    await prisma.move.deleteMany({
+      where: {
+        playerId: {
+          notIn: topPlayerIds,
+        },
+      },
+    });
+
+    // Step 5: Delete users who are not in the top players
+    await prisma.user.deleteMany({
+      where: {
+        id: {
+          notIn: topPlayerIds,
+        },
+      },
+    });
+
+    // Step 6: Send back the list of deleted users
+    return res.status(200).json({
+      message: `Users deleted successfully, keeping only top ${number} players.`,
+      deletedUsers: usersToDelete,
+    });
   } catch (error) {
     console.error("Error deleting users:", error);
     return res.status(500).json({ error: "Error filtering users" });
