@@ -30,6 +30,7 @@ const adminAuth = require("./middleware/adminAuth");
 
 const userRoutes = require("./routes/userRoutes");
 const loginRoutes = require("./routes/login");
+const ocAuth = require("./middleware/ocAuth");
 
 // route added to check domain resolution
 app.get('/', (req, res) => {
@@ -38,6 +39,7 @@ app.get('/', (req, res) => {
 
 app.use("/login", loginRoutes);
 app.use("/admin", adminAuth, adminRoutes);
+app.use("/oc", ocAuth, ocRoutes);
 app.use("/user", userRoutes);
 
 // Set up a headless websocket server that prints any
