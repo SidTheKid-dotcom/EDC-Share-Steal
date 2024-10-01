@@ -79,6 +79,12 @@ server.on('upgrade', (request, socket, head) => {
 
       const playerId = parseInt(decoded.playerId, 10);
 
+      if (!playerId) {
+        socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+        socket.destroy();
+        return;
+      }
+
       if (!await connectionLimiter(playerId)) {
         socket.write('HTTP/1.1 429 Too Many Connection Requests\r\n\r\n');
         socket.destroy();
@@ -92,7 +98,7 @@ server.on('upgrade', (request, socket, head) => {
   }
   catch (err) {
     socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-    socket.close();
+    socket.destroy();
     return;
   }
 });
