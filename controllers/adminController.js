@@ -79,12 +79,11 @@ exports.fetchGoogleSpreadsheet = async (req, res) => {
 };
 
 exports.sendToGoogleSpreadsheet = async (req, res) => {
-  const { gameId, gameNoForSheets } = req.body;
+  const { gameNoForSheets } = req.body;
 
   try {
     const players = await prisma.user.findMany({
       where: {
-        activeGameId: parseInt(gameId, 10),
         gameNoForSheets: parseInt(gameNoForSheets, 10),
       },
       orderBy: {
@@ -98,7 +97,7 @@ exports.sendToGoogleSpreadsheet = async (req, res) => {
 
     await prisma.user.updateMany({
       where: {
-        activeGameId: parseInt(gameId, 10),
+        gameNoForSheets: parseInt(gameNoForSheets, 10),
       },
       data: {
         gameNoForSheets: parseInt(gameNoForSheets, 10) + 1,
