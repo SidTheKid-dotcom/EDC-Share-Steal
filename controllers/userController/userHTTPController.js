@@ -9,19 +9,27 @@ const jwt = require('jsonwebtoken');
 
 exports.fetchGames = async (req, res) => {
 
-    const allGames = await prisma.game.findMany({
-        where: {
-            status: 'ACTIVE',
-        },
-        orderBy: {
-            startTime: 'desc',
-        },
-    });
+    try {
+        const allGames = await prisma.game.findMany({
+            where: {
+                status: 'ACTIVE',
+            },
+            orderBy: {
+                startTime: 'desc',
+            },
+        });
 
-    res.json({
-        message: 'All Games',
-        games: allGames
-    });
+        res.json({
+            message: 'All Games',
+            games: allGames
+        });
+    }
+    catch (error) {
+        console.error('Error fetching games:', error);
+        res.status(500).json({
+            message: 'An error occurred while fetching games.',
+        });
+    }
 
 }
 
@@ -100,22 +108,29 @@ exports.connectToGame = async (req, res) => {
 exports.disconnectFromGame = async (req, res) => {
     const { playerId } = req.body;
 
-    const client = getClientById(playerId);
-    if (client) {
-        broadcastToOne('Game disconnected', playerId);
-        client.close();
-        removeClient(client);
-    }
+    try {
 
-    if (!playerId) {
-        return res.status(400).json({ error: 'Player ID is missing' });
-    }
-    await prisma.user.update({
-        where: { id: parseInt(playerId, 10) },
-        data: {
-            activeGameId: null
+        const client = getClientById(playerId);
+        if (client) {
+            broadcastToOne('Game disconnected', playerId);
+            client.close();
+            removeClient(client);
         }
-    });
 
-    return res.status(200).send('Game disconnected');
+        if (!playerId) {
+            return res.status(400).json({ error: 'Player ID is missing' });
+        }
+        await prisma.user.update({
+            where: { id: parseInt(playerId, 10) },
+            data: {
+                activeGameId: null
+            }
+        });
+
+        return res.status(200).send('Game disconnected');
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: 'Error disconnecting from game' });
+    }
 }

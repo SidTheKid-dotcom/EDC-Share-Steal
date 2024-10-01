@@ -22,9 +22,13 @@ exports.adminBroadcast = async (req, res) => {
 exports.adminBroadcastToGame = async (req, res) => {
   const { gameId } = req.body;
 
-  broadcastToGame(`Broadcasting to all clients in game ${gameId}`, gameId);
+  try {
+    broadcastToGame(`Broadcasting to all clients in game ${gameId}`, gameId);
 
-  return res.send("Broadcasting to all clients in game successful " + gameId);
+    return res.send("Broadcasting to all clients in game successful " + gameId);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 exports.getDashboard = async (req, res) => {
@@ -34,12 +38,16 @@ exports.getDashboard = async (req, res) => {
 
   // console.log(allGames);
 
-  broadcast(JSON.stringify({ type: "games", games: allGames }));
+  try {
+    broadcast(JSON.stringify({ type: "games", games: allGames }));
 
-  return res.json({
-    message: "Admin Dashboard",
-    games: allGames,
-  });
+    return res.json({
+      message: "Admin Dashboard",
+      games: allGames,
+    });
+  } catch (error) {
+    console.log(error)
+  }
 };
 
 exports.fetchGoogleSpreadsheet = async (req, res) => {
@@ -51,50 +59,59 @@ exports.fetchGoogleSpreadsheet = async (req, res) => {
     return res.status(404).json({ error: "No data found in Google Sheets" });
   }
 
-  for (const value of valuesArray) {
-    console.log(value[0] + " " + value[1]);
-    await prisma.user.create({
-      data: {
-        name: value[1].toUpperCase(),
-        password: "12345",
-      },
-    });
-  }
+  try {
+    for (const value of valuesArray) {
+      console.log(value[0] + " " + value[1]);
+      await prisma.user.create({
+        data: {
+          name: value[1].toUpperCase(),
+          password: "12345",
+        },
+      });
+    }
 
-  return res.json({
-    Response: valuesArray,
-  });
+    return res.json({
+      Response: valuesArray,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 exports.sendToGoogleSpreadsheet = async (req, res) => {
   const { gameId, gameNoForSheets } = req.body;
 
-  const players = await prisma.user.findMany({
-    where: {
-      activeGameId: parseInt(gameId, 10),
-      gameNoForSheets: parseInt(gameNoForSheets, 10),
-    },
-    orderBy: {
-      points: "desc",
-    },
-  });
+  try {
+    const players = await prisma.user.findMany({
+      where: {
+        activeGameId: parseInt(gameId, 10),
+        gameNoForSheets: parseInt(gameNoForSheets, 10),
+      },
+      orderBy: {
+        points: "desc",
+      },
+    });
 
-  console.log(players);
+    console.log(players);
 
-  const response = await sendToGoogleSpreadsheet(gameNoForSheets, players);
+    const response = await sendToGoogleSpreadsheet(gameNoForSheets, players);
 
-  await prisma.user.updateMany({
-    where: {
-      activeGameId: parseInt(gameId, 10),
-    },
-    data: {
-      gameNoForSheets: parseInt(gameNoForSheets, 10) + 1,
-    },
-  });
+    await prisma.user.updateMany({
+      where: {
+        activeGameId: parseInt(gameId, 10),
+      },
+      data: {
+        gameNoForSheets: parseInt(gameNoForSheets, 10) + 1,
+      },
+    });
 
-  console.log(response);
+    console.log(response);
 
-  return res.status(200).send("Data Moved To Spreadsheet");
+    return res.status(200).send("Data Moved To Spreadsheet");
+  }
+  catch (error) {
+    console.log(error);
+  }
 };
 
 exports.getAllPlayers = async (req, res) => {
@@ -229,7 +246,13 @@ exports.pairPlayers = async (req, res) => {
 exports.createNewGame = async (req, res) => {
   // Logic to create a new game
   res.send("New game created");
-  const newGame = await prisma.game.create({});
+
+  try {
+    const newGame = await prisma.game.create({});
+  }
+  catch (error) {
+    console.log(error);
+  }
 
   return res.send(newGame);
 };
@@ -238,56 +261,66 @@ exports.startGame = async (req, res) => {
   // Logic to create a new game
   const gameId = req.body.gameId;
 
-  const existingGame = await prisma.game.findFirst({
-    where: {
-      gameId: gameId,
-    },
-  });
+  try {
+    const existingGame = await prisma.game.findFirst({
+      where: {
+        gameId: gameId,
+      },
+    });
 
-  if (existingGame.status === "ACTIVE") {
-    return res.send("Game already started");
+    if (existingGame.status === "ACTIVE") {
+      return res.send("Game already started");
+    }
+
+    const startedGame = await prisma.game.update({
+      where: {
+        gameId: gameId,
+      },
+      data: {
+        startTime: new Date(),
+        roundNo: 1,
+        status: "ACTIVE",
+      },
+    });
+
+    return res.send(startedGame);
   }
-
-  const startedGame = await prisma.game.update({
-    where: {
-      gameId: gameId,
-    },
-    data: {
-      startTime: new Date(),
-      roundNo: 1,
-      status: "ACTIVE",
-    },
-  });
-
-  return res.send(startedGame);
+  catch (error) {
+    console.log(error);
+  }
 };
 
 exports.endGame = async (req, res) => {
   // Logic to create a new game
   const gameId = req.body.gameId;
 
-  const existingGame = await prisma.game.findUnique({
-    where: {
-      gameId: gameId,
-    },
-  });
+  try {
+    const existingGame = await prisma.game.findUnique({
+      where: {
+        gameId: gameId,
+      },
+    });
 
-  if (existingGame.status === "COMPLETED") {
-    return res.send("Game already ended");
+    if (existingGame.status === "COMPLETED") {
+      return res.send("Game already ended");
+    }
+
+    const endedGame = await prisma.game.update({
+      where: {
+        gameId: gameId,
+      },
+      data: {
+        endTime: new Date(),
+        roundNo: null,
+        status: "COMPLETED",
+      },
+    });
+
+    return res.send(endedGame);
   }
-
-  const endedGame = await prisma.game.update({
-    where: {
-      gameId: gameId,
-    },
-    data: {
-      endTime: new Date(),
-      roundNo: null,
-      status: "COMPLETED",
-    },
-  });
-
-  return res.send(endedGame);
+  catch (erro) {
+    console.log(error);
+  }
 };
 
 exports.resetClock = async (req, res) => {
@@ -295,39 +328,53 @@ exports.resetClock = async (req, res) => {
   const duration = req.body.duration || 30;
   const gameId = req.body.gameId;
 
-  const updatedGame = await prisma.game.update({
-    where: {
-      gameId: gameId,
-    },
-    data: {
-      roundNo: {
-        increment: 1, // This increments the current roundNo by 1
+  try {
+    const updatedGame = await prisma.game.update({
+      where: {
+        gameId: gameId,
       },
-    },
-  });
+      data: {
+        roundNo: {
+          increment: 1, // This increments the current roundNo by 1
+        },
+      },
+    });
 
-  const roundNumber = updatedGame.roundNo;
+    const roundNumber = updatedGame.roundNo;
 
-  // Default to 30 seconds if not provided
-  resetClock(duration, gameId, roundNumber);
+    // Default to 30 seconds if not provided
+    resetClock(duration, gameId, roundNumber);
 
-  res.send(`Clock reset for round ${roundNumber}`);
+    return res.send(`Clock reset for round ${roundNumber}`);
+  }
+  catch (error) {
+    console.log(error);
+  }
 };
 
 exports.getGameStats = (req, res) => {
   // Logic to retrieve game stats
-  res.json({ stats: "Game statistics data" });
+  try {
+    return res.json({ stats: "Game statistics data" });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 exports.deleteAllData = async (req, res) => {
   // Logic to delete all data
-  await prisma.$transaction([
-    prisma.game.deleteMany({}),
-    prisma.user.deleteMany({}),
-    prisma.move.deleteMany({}),
-  ]);
+  try {
+    await prisma.$transaction([
+      prisma.game.deleteMany({}),
+      prisma.user.deleteMany({}),
+      prisma.move.deleteMany({}),
+    ]);
 
-  return res.send("All data deleted");
+    return res.send("All data deleted");
+  }
+  catch (error) {
+    console.log(error);
+  }
 };
 
 exports.truncateTables = async (req, res) => {
